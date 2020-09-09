@@ -1,4 +1,6 @@
 import 'package:brew_crew/services/auth.dart';
+import 'package:brew_crew/shared/constants.dart';
+import 'package:brew_crew/shared/loading.dart';
 import 'package:flutter/material.dart';
 
 class SignIn extends StatefulWidget {
@@ -12,6 +14,7 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
+  bool loading = false;
   //text field state
   String email = '';
   String password = '';
@@ -19,10 +22,10 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading ? Loading() : Scaffold(
       backgroundColor: Colors.brown[100],
       appBar: AppBar(
-        backgroundColor: Colors.brown[400],
+        backgroundColor: Colors.brown[500],
         elevation: 0.0,
         title: Text('Sign In to Brew Crew'),
         actions: [
@@ -43,23 +46,7 @@ class _SignInState extends State<SignIn> {
             children: [
               SizedBox(height: 20),
               TextFormField(
-                 decoration: InputDecoration(
-                  hintText: 'Enter Email',
-                  fillColor: Colors.white,
-                  filled: true,
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.pink,
-                      width: 2,
-                    ),
-                  ),
-                ),
+                decoration: textInputDecoration.copyWith(hintText: 'Email'),
                 validator: (val) {
                   return val.isEmpty ? 'Enter an Email' : null;
                 },
@@ -71,23 +58,7 @@ class _SignInState extends State<SignIn> {
               ),
               SizedBox(height: 20),
               TextFormField(
-                 decoration: InputDecoration(
-                  hintText: 'Enter Password',
-                  fillColor: Colors.white,
-                  filled: true,
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.pink,
-                      width: 2,
-                    ),
-                  ),
-                ),
+                decoration: textInputDecoration.copyWith(hintText: 'Password'),
                 validator: (val) {
                   return val.length < 6
                       ? 'Enter a Password 6+ chars long '
@@ -105,13 +76,16 @@ class _SignInState extends State<SignIn> {
               ),
               RaisedButton(
                 onPressed: () async {
-              
-                   if (_formKey.currentState.validate()) {
-                    dynamic result = await _auth.SignInWithEmailAndPassword(
-                        email, password);
+                  if (_formKey.currentState.validate()) {
+                    setState(() {
+                      loading = true;
+                    });
+                    dynamic result =
+                        await _auth.SignInWithEmailAndPassword(email, password);
                     if (result == null) {
                       setState(() {
                         error = 'could not sign in with these credentials';
+                        loading = false;
                       });
                     }
                   }

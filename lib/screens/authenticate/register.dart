@@ -1,4 +1,6 @@
 import 'package:brew_crew/services/auth.dart';
+import 'package:brew_crew/shared/constants.dart';
+import 'package:brew_crew/shared/loading.dart';
 import 'package:flutter/material.dart';
 
 class Register extends StatefulWidget {
@@ -12,6 +14,7 @@ class Register extends StatefulWidget {
 class _RegisterState extends State<Register> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
+  bool loading = false;
   //text fields
   String email = '';
   String password = '';
@@ -19,7 +22,7 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading ?Loading() : Scaffold(
       backgroundColor: Colors.brown[100],
       appBar: AppBar(
         backgroundColor: Colors.brown[400],
@@ -43,23 +46,7 @@ class _RegisterState extends State<Register> {
             children: [
               SizedBox(height: 20),
               TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Enter Email',
-                  fillColor: Colors.white,
-                  filled: true,
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.pink,
-                      width: 2,
-                    ),
-                  ),
-                ),
+                decoration: textInputDecoration.copyWith(hintText: 'Email'),
                 validator: (val) {
                   return val.isEmpty ? 'Enter an Email' : null;
                 },
@@ -71,23 +58,7 @@ class _RegisterState extends State<Register> {
               ),
               SizedBox(height: 20),
               TextFormField(
-                 decoration: InputDecoration(
-                  hintText: 'Enter Password',
-                  fillColor: Colors.white,
-                  filled: true,
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.pink,
-                      width: 2,
-                    ),
-                  ),
-                ),
+                decoration: textInputDecoration.copyWith(hintText: 'Password'),
                 validator: (val) {
                   return val.length < 6
                       ? 'Enter a Password 6+ chars long '
@@ -106,11 +77,15 @@ class _RegisterState extends State<Register> {
               RaisedButton(
                 onPressed: () async {
                   if (_formKey.currentState.validate()) {
+                    setState(() {
+                      loading = true;
+                    });
                     dynamic result = await _auth.registerWithEmailAndPassword(
                         email, password);
                     if (result == null) {
                       setState(() {
                         error = 'please supply a valid email';
+                        loading = false;
                       });
                     }
                   }
@@ -121,7 +96,9 @@ class _RegisterState extends State<Register> {
                   style: TextStyle(color: Colors.white),
                 ),
               ),
-              SizedBox(height: 12,),
+              SizedBox(
+                height: 12,
+              ),
               Text(
                 error,
                 style: TextStyle(
